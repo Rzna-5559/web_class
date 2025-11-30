@@ -26,7 +26,10 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),
     path('orders/', include('orders.urls')),
     path('', dashboard, name='dashboard'),
-] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+] 
 
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# 静态文件URL配置
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+# 媒体文件URL配置
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
