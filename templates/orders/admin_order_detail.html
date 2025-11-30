@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+
+{% block title %}订单详情 - 课程进度管理系统{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>订单详情</h1>
+            <div class="btn-group">
+                <a href="{% url 'orders:admin_order_edit' order.id %}" class="btn btn-primary">
+                    <i class="fas fa-edit"></i> 编辑订单
+                </a>
+                <a href="{% url 'orders:admin_order_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-list"></i> 返回列表
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- 订单基本信息 -->
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                订单基本信息
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered">
+                    <tbody>
+                        <tr>
+                            <th>订单编号</th>
+                            <td>{{ order.order_number }}</td>
+                        </tr>
+                        <tr>
+                            <th>订单名称</th>
+                            <td>{{ order.name }}</td>
+                        </tr>
+                        <tr>
+                            <th>分配教师</th>
+                            <td>{{ order.teacher.username }}</td>
+                        </tr>
+                        <tr>
+                            <th>服务学生数</th>
+                            <td>{{ order.student_count }}人</td>
+                        </tr>
+                        <tr>
+                            <th>服务类型</th>
+                            <td>
+                                {% if order.service_type == 'one_to_one' %}一对一{% elif order.service_type == 'one_to_two' %}一对二{% else %}{{ order.service_type }}{% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>单价</th>
+                            <td>¥{{ order.unit_price }}</td>
+                        </tr>
+                        <tr>
+                            <th>总时长</th>
+                            <td>{{ order.total_hours }}小时</td>
+                        </tr>
+                        <tr>
+                            <th>总金额</th>
+                            <td>¥{{ order.total_amount }}</td>
+                        </tr>
+                        <tr>
+                            <th>订单状态</th>
+                            <td>
+                                {% for value, display in order.STATUS_CHOICES %}
+                                    {% if order.status == value %}<span class="badge bg-warning">{{ display }}</span>{% endif %}
+                                {% endfor %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>订单描述</th>
+                            <td>{{ order.description|default:'无' }}</td>
+                        </tr>
+                        <tr>
+                            <th>创建时间</th>
+                            <td>{{ order.created_at|date:'Y-m-d H:i:s' }}</td>
+                        </tr>
+                        <tr>
+                            <th>更新时间</th>
+                            <td>{{ order.updated_at|date:'Y-m-d H:i:s' }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 右侧信息 -->
+    <div class="col-md-4">
+        <!-- 教师信息 -->
+        <div class="card mb-4">
+            <div class="card-header bg-secondary text-white">
+                教师信息
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <tbody>
+                        <tr>
+                            <th>用户名</th>
+                            <td>{{ order.teacher.username }}</td>
+                        </tr>
+                        <tr>
+                            <th>姓名</th>
+                            <td>{{ order.teacher.teacher_info.name|default:'未填写' }}</td>
+                        </tr>
+                        <tr>
+                            <th>学历</th>
+                            <td>{{ order.teacher.teacher_info.education|default:'未填写' }}</td>
+                        </tr>
+                        <tr>
+                            <th>专业</th>
+                            <td>{{ order.teacher.teacher_info.major|default:'未填写' }}</td>
+                        </tr>
+                        <tr>
+                            <th>辅导范围</th>
+                            <td>{{ order.teacher.teacher_info.teaching_range|default:'未填写' }}</td>
+                        </tr>
+                        <tr>
+                            <th>联系电话</th>
+                            <td>{{ order.teacher.teacher_info.phone|default:'未填写' }}</td>
+                        </tr>
+                        <tr>
+                            <th>银行账户</th>
+                            <td>{{ order.teacher.teacher_info.bank_account|default:'未填写' }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- 引入Font Awesome图标库 -->
+{% endblock %}

@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block title %}教师工作台 - 课程进度管理系统{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="mb-4">教师工作台</h1>
+    </div>
+</div>
+
+<!-- 教师信息卡片 -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div>
+                        <h4 class="card-title">{{ user.username }}</h4>
+                        {% if user.teacher_info.name %}
+                        <p class="card-text">
+                            姓名: {{ user.teacher_info.name }}<br>
+                            专业: {{ user.teacher_info.major }}{% if not user.teacher_info.major %} (未填写){% endif %}
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 操作按钮区域 -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{% url 'orders:teacher_order_list' %}" class="btn btn-primary">
+                        <i class="fas fa-list"></i> 查看我的订单
+                    </a>
+                    <a href="{% url 'orders:salary_application_list' %}" class="btn btn-secondary">
+                        <i class="fas fa-file-invoice-dollar"></i> 查看工资申请
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 我的订单概览 -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title">我的订单</h5>
+                    <a href="{% url 'orders:teacher_order_list' %}" class="btn btn-sm btn-secondary">查看全部</a>
+                </div>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>订单编号</th>
+                            <th>订单名称</th>
+                            <th>状态</th>
+                            <th>总金额</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in my_orders %}<tr>
+                                <td>{{ order.order_number }}</td>
+                                <td>{{ order.name }}</td>
+                                <td>
+                                    {% if order.status == 'pending' %}<span class="badge bg-warning">待开课</span>{% elif order.status == 'ongoing' %}<span class="badge bg-info">进行中</span>{% elif order.status == 'completed' %}<span class="badge bg-success">已完成</span>{% endif %}
+                                </td>
+                                <td>¥{{ order.total_amount }}</td>
+                            </tr>{% empty %}<tr>
+                                <td colspan="4" class="text-center">暂无订单</td>
+                            </tr>{% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 我的工资申请概览 -->
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title">我的工资申请</h5>
+                    <a href="{% url 'orders:salary_application_list' %}" class="btn btn-sm btn-secondary">查看全部</a>
+                </div>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>申请编号</th>
+                            <th>订单编号</th>
+                            <th>申请金额</th>
+                            <th>状态</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for application in my_applications %}<tr>
+                                <td>{{ application.application_number }}</td>
+                                <td>{{ application.order.order_number }}</td>
+                                <td>¥{{ application.apply_amount }}</td>
+                                <td>
+                                    {% if application.status == 'pending' %}<span class="badge bg-warning">待审核</span>{% elif application.status == 'approved' %}<span class="badge bg-success">已通过</span>{% elif application.status == 'rejected' %}<span class="badge bg-danger">已拒绝</span>{% elif application.status == 'withdrawn' %}<span class="badge bg-secondary">已撤回</span>{% endif %}
+                                </td>
+                            </tr>{% empty %}<tr>
+                                <td colspan="4" class="text-center">暂无工资申请</td>
+                            </tr>{% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

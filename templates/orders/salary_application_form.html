@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+
+{% block title %}提交工资申请 - 课程进度管理系统{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="mb-4">提交工资申请</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate id="applicationForm">
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        {{ form.order.label_tag }}
+                        {{ form.order }}
+                        {% if form.order.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.order.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                         {{ form.apply_amount.label_tag }}
+                          <div class="input-group">
+                              <div class="input-group-prepend">
+                                  <span class="input-group-text">¥</span>
+                              </div>
+                             {{ form.apply_amount }}
+                          </div>
+                         {% if form.apply_amount.errors %}
+                              <div class="invalid-feedback">
+                                 {{ form.apply_amount.errors.0 }}
+                              </div>
+                          {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ form.proof_file.label_tag }}
+                        <div class="custom-file">
+                            {{ form.proof_file }}
+                            <label class="custom-file-label" for="id_proof_file">选择文件</label>
+                        </div>
+                        {% if form.proof_file.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.proof_file.errors.0 }}
+                            </div>
+                        {% endif %}
+                        <small class="form-text text-muted">支持JPG、PNG图片和PDF文件，最大3MB</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ form.remarks.label_tag }}
+                        {{ form.remarks }}
+                        {% if form.remarks.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.remarks.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> 提交申请
+                        </button>
+                        <a href="{% url 'orders:salary_application_list' %}" class="btn btn-secondary ml-2">
+                            <i class="fas fa-times"></i> 取消
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <i class="fas fa-info-circle"></i> 申请须知
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-3">
+                        <i class="fas fa-check-circle text-success"></i> 请确保选择正确的订单
+                    </li>
+                    <li class="mb-3">
+                        <i class="fas fa-check-circle text-success"></i> 申请金额不能超过订单总金额
+                    </li>
+                    <li class="mb-3">
+                        <i class="fas fa-check-circle text-success"></i> 请上传有效的证明材料，如课程记录或学生确认单
+                    </li>
+                    <li class="mb-3">
+                        <i class="fas fa-check-circle text-success"></i> 上传的文件大小不能超过3MB
+                    </li>
+                    <li class="mb-3">
+                        <i class="fas fa-check-circle text-success"></i> 提交后，管理员将在3个工作日内进行审核
+                    </li>
+                    <li class="mb-3">
+                        <i class="fas fa-check-circle text-success"></i> 您可以在"我的工资申请"中查看申请状态
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        {% if form.instance.order %}
+            <div class="card mt-4">
+                <div class="card-header bg-primary text-white">
+                    订单信息
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tbody>
+                            <tr>
+                                <th>订单编号</th>
+                                <td>{{ form.instance.order.order_number }}</td>
+                            </tr>
+                            <tr>
+                                <th>订单名称</th>
+                                <td>{{ form.instance.order.name }}</td>
+                            </tr>
+                            <tr>
+                                <th>订单总金额</th>
+                                <td>¥{{ form.instance.order.total_amount }}</td>
+                            </tr>
+                            <tr>
+                                <th>订单状态</th>
+                                <td>
+                                    {% if form.instance.order.status == 'completed' %}<span class="badge bg-success">已完成</span>{% endif %}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- 引入Font Awesome图标库 -->
+
+<script>
+// 文件选择预览
+$(document).ready(function() {
+    $('.custom-file-input').on('change', function() {
+        var fileName = $(this).val().split('\\').pop();
+        $(this).next('.custom-file-label').html(fileName);
+    });
+    
+    // 表单提交动画
+    $('#applicationForm').submit(function() {
+        $(this).find('button[type="submit"]').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> 提交中...');
+    });
+    
+    // 获取URL中的订单ID参数
+    const urlParams = new URLSearchParams(window.location.search);
+    const orderId = urlParams.get('order_id');
+    
+    // 如果URL中有订单ID，自动选择该订单
+    if (orderId) {
+        $('#id_order').val(orderId);
+    }
+});
+</script>
+{% endblock %}

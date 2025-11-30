@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block title %}操作日志管理 - 课程进度管理系统{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="mb-4">操作日志管理</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">日志列表</h3>
+            </div>
+            
+            <div class="card-body">
+                <!-- 搜索筛选表单 -->
+                <form method="get" class="mb-4">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="search">搜索</label>
+                                <input type="text" name="search" id="search" class="form-control" value="{{ search }}" placeholder="搜索描述、对象、IP等">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label for="action">操作类型</label>
+                                <select name="action" id="action" class="form-control">
+                                    <option value="">全部</option>
+                                    {% for key, value in action_choices %}
+                                        <option value="{{ key }}" {% if action == key %}selected{% endif %}>{{ value }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label for="user">操作用户</label>
+                                <select name="user" id="user" class="form-control">
+                                    <option value="">全部</option>
+                                    {% for u in users %}
+                                        <option value="{{ u.id }}" {% if user_id == u.id|stringformat:'s' %}selected{% endif %}>{{ u.username }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label for="start_date">开始日期</label>
+                                <input type="date" name="start_date" id="start_date" class="form-control" value="{{ start_date }}">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label for="end_date">结束日期</label>
+                                <input type="date" name="end_date" id="end_date" class="form-control" value="{{ end_date }}">
+                            </div>
+                        </div>
+                        <div class="col-md-1">
+                            <div class="form-group">
+                                <label for="search_btn">&nbsp;</label>
+                                <button type="submit" id="search_btn" class="btn btn-primary btn-block">搜索</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                
+                <!-- 日志列表 -->
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>操作时间</th>
+                                <th>操作用户</th>
+                                <th>操作类型</th>
+                                <th>操作对象</th>
+                                <th>IP地址</th>
+                                <th>操作描述</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if logs %}
+                                {% for log in logs %}
+                                    <tr>
+                                        <td>{{ log.created_at|date:'Y-m-d H:i:s' }}</td>
+                                        <td>{{ log.user.username|default:'未知用户' }}</td>
+                                        <td>
+                                            <span class="badge {% if log.action == 'login' %}badge-success{% elif log.action == 'logout' %}badge-info{% elif log.action == 'create' %}badge-primary{% elif log.action == 'update' %}badge-warning{% elif log.action == 'delete' %}badge-danger{% elif log.action == 'approve' %}badge-success{% elif log.action == 'reject' %}badge-danger{% endif %}">
+                                                {{ log.get_action_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <strong>{{ log.object_type }}</strong><br>
+                                            <small>ID: {{ log.object_id }}</small><br>
+                                            <small>名称: {{ log.object_name }}</small>
+                                        </td>
+                                        <td>{{ log.ip_address }}</td>
+                                        <td>{{ log.description }}</td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="6" class="text-center">暂无日志记录</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // 添加表单提交动画
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const button = this.querySelector('button[type="submit"]');
+        button.disabled = true;
+        button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 搜索中...';
+    });
+</script>
+{% endblock %}

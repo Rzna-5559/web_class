@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block title %}订单管理 - 课程进度管理系统{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>订单管理</h1>
+            <a href="{% url 'orders:admin_order_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> 创建新订单
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- 搜索和筛选 -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="get" class="form-inline">
+                    <div class="form-group mr-3 mb-2">
+                        <input type="text" name="search" class="form-control" placeholder="搜索订单编号或名称" value="{{ search }}">
+                    </div>
+                    <div class="form-group mr-3 mb-2">
+                        <select name="status" class="form-control">
+                            <option value="">所有状态</option>
+                            {% for value, display in status_choices %}
+                                <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ display }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary mb-2">
+                        <i class="fas fa-search"></i> 搜索
+                    </button>
+                    <a href="{% url 'orders:admin_order_list' %}" class="btn btn-secondary ml-2 mb-2">
+                        <i class="fas fa-times"></i> 重置
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 订单列表 -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>订单编号</th>
+                            <th>订单名称</th>
+                            <th>分配教师</th>
+                            <th>服务学生数</th>
+                            <th>服务类型</th>
+                            <th>单价</th>
+                            <th>总时长</th>
+                            <th>总金额</th>
+                            <th>状态</th>
+                            <th>创建时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                            <tr>
+                                <td>{{ order.order_number }}</td>
+                                <td>{{ order.name }}</td>
+                                <td>{{ order.teacher.username }}</td>
+                                <td>{{ order.student_count }}</td>
+                                <td>
+                                    {% if order.service_type == 'one_to_one' %}一对一{% elif order.service_type == 'one_to_two' %}一对二{% else %}{{ order.service_type }}{% endif %}
+                                </td>
+                                <td>¥{{ order.unit_price }}</td>
+                                <td>{{ order.total_hours }}小时</td>
+                                <td>¥{{ order.total_amount }}</td>
+                                <td>
+                                    {% for value, display in status_choices %}
+                                        {% if order.status == value %}<span class="badge bg-warning">{{ display }}</span>{% endif %}
+                                    {% endfor %}
+                                </td>
+                                <td>{{ order.created_at|date:'Y-m-d H:i' }}</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{% url 'orders:admin_order_detail' order.id %}" class="btn btn-sm btn-info">
+                                            <i class="fas fa-eye"></i> 查看
+                                        </a>
+                                        <a href="{% url 'orders:admin_order_edit' order.id %}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-edit"></i> 编辑
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="11" class="text-center">暂无订单</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- 引入Font Awesome图标库 -->
+{% endblock %}

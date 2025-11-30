@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block title %}我的订单 - 课程进度管理系统{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="mb-4">我的订单</h1>
+    </div>
+</div>
+
+<!-- 搜索和筛选 -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="get" class="form-inline">
+                    <div class="form-group mr-3 mb-2">
+                        <input type="text" name="search" class="form-control" placeholder="搜索订单编号或名称" value="{{ search }}">
+                    </div>
+                    <div class="form-group mr-3 mb-2">
+                        <select name="status" class="form-control">
+                            <option value="">所有状态</option>
+                            <option value="pending" {% if status == 'pending' %}selected{% endif %}>待开课</option>
+                            <option value="in_progress" {% if status == 'in_progress' %}selected{% endif %}>进行中</option>
+                            <option value="completed" {% if status == 'completed' %}selected{% endif %}>已完成</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary mb-2">
+                        <i class="fas fa-search"></i> 搜索
+                    </button>
+                    <a href="{% url 'orders:teacher_order_list' %}" class="btn btn-secondary ml-2 mb-2">
+                        <i class="fas fa-times"></i> 重置
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 订单列表 -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>订单编号</th>
+                            <th>订单名称</th>
+                            <th>服务学生数</th>
+                            <th>服务类型</th>
+                            <th>单价</th>
+                            <th>总时长</th>
+                            <th>总金额</th>
+                            <th>状态</th>
+                            <th>创建时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                            <tr>
+                                <td>{{ order.order_number }}</td>
+                                <td>{{ order.name }}</td>
+                                <td>{{ order.student_count }}</td>
+                                <td>
+                                    {% if order.service_type == 'one_to_one' %}一对一{% elif order.service_type == 'one_to_two' %}一对二{% else %}{{ order.service_type }}{% endif %}
+                                </td>
+                                <td>¥{{ order.unit_price }}</td>
+                                <td>{{ order.total_hours }}小时</td>
+                                <td>¥{{ order.total_amount }}</td>
+                                <td>
+                                    {% if order.status == 'pending' %}<span class="badge bg-warning">待开课</span>{% elif order.status == 'in_progress' %}<span class="badge bg-info">进行中</span>{% elif order.status == 'completed' %}<span class="badge bg-success">已完成</span>{% endif %}
+                                </td>
+                                <td>{{ order.created_at|date:'Y-m-d H:i' }}</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{% url 'orders:teacher_order_detail' order.id %}" class="btn btn-sm btn-info">
+                                            <i class="fas fa-eye"></i> 查看
+                                        </a>
+                                        {% if order.status == 'completed' %}
+                                            <a href="{% url 'orders:salary_application_create' %}?order_id={{ order.id }}" class="btn btn-sm btn-warning">
+                                                <i class="fas fa-file-invoice-dollar"></i> 申请工资
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="10" class="text-center">暂无订单</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 分页 -->
+<div class="row">
+    <div class="col-md-12">
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% if orders.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ orders.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                        {% for page in orders.paginator.page_range %}
+                            <li class="page-item {% if page == orders.number %}active{% endif %}">
+                                <a class="page-link" href="?page={{ page }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">{{ page }}</a>
+                            </li>
+                        {% endfor %}
+                        
+                        {% if orders.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ orders.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                        {% endif %}
+            </ul>
+        </nav>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- 引入Font Awesome图标库 -->
+{% endblock %}

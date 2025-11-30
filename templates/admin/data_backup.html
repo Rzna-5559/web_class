@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}数据备份管理 - 班级操作系统{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">数据备份管理</h1>
+    
+    <!-- 备份操作区域 -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2 class="h5 mb-0">备份操作</h2>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <!-- 创建备份 -->
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h3 class="h6 mb-3">创建新备份</h3>
+                            <p class="text-muted mb-4">创建当前数据库的完整备份，建议定期执行此操作以防止数据丢失。</p>
+                            <form method="post">
+                                {% csrf_token %}
+                                <button type="submit" name="backup" class="btn btn-primary">
+                                    <i class="fas fa-database"></i> 创建备份
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 恢复备份 -->
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h3 class="h6 mb-3">恢复备份</h3>
+                            <p class="text-muted mb-4">上传并恢复之前的备份文件。此操作将覆盖当前数据库中的所有数据，请谨慎操作！</p>
+                            <form method="post" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <div class="form-group mb-3">
+                                    <input type="file" name="backup_file" class="form-control-file" accept=".sql" required>
+                                </div>
+                                <button type="submit" name="restore" class="btn btn-warning">
+                                    <i class="fas fa-undo"></i> 恢复备份
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 备份文件列表 -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2 class="h5 mb-0">备份文件列表</h2>
+        </div>
+        <div class="card-body">
+            {% if backups %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>文件名</th>
+                            <th>大小</th>
+                            <th>创建时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for backup in backups %}
+                        <tr>
+                            <td>{{ backup.filename }}</td>
+                            <td>{{ backup.size|filesizeformat }}</td>
+                            <td>{{ backup.mtime|date:"Y-m-d H:i:s" }}</td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <!-- 下载备份 -->
+                                    <form method="post" style="display: inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="filename" value="{{ backup.filename }}">
+                                        <button type="submit" name="download" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-download"></i> 下载
+                                        </button>
+                                    </form>
+                                    
+                                    <!-- 删除备份 -->
+                                    <form method="post" style="display: inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="filename" value="{{ backup.filename }}">
+                                        <button type="submit" name="delete" class="btn btn-sm btn-danger" onclick="return confirm('确定要删除此备份文件吗？')">
+                                            <i class="fas fa-trash"></i> 删除
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-info-circle text-muted mb-2" style="font-size: 2rem;"></i>
+                <p class="text-muted">暂无备份文件，请创建新的备份。</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- 备份信息说明 -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="h5 mb-0">备份说明</h2>
+        </div>
+        <div class="card-body">
+            <ul class="list-unstyled">
+                <li class="mb-2">
+                    <i class="fas fa-info-circle text-primary mr-2"></i>
+                    <strong>备份内容：</strong>所有数据库中的数据，包括用户信息、订单数据、工资申请等。
+                </li>
+                <li class="mb-2">
+                    <i class="fas fa-clock text-primary mr-2"></i>
+                    <strong>备份建议：</strong>建议每周至少执行一次备份操作，特别是在进行重要数据修改前。
+                </li>
+                <li class="mb-2">
+                    <i class="fas fa-exclamation-triangle text-warning mr-2"></i>
+                    <strong>恢复注意事项：</strong>恢复操作将覆盖当前所有数据，请确保在执行前已创建最新备份。
+                </li>
+                <li class="mb-2">
+                    <i class="fas fa-shield-alt text-primary mr-2"></i>
+                    <strong>安全建议：</strong>定期将备份文件下载并存储在安全的位置，以防服务器故障导致数据丢失。
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // 添加表单提交动画效果
+    document.addEventListener('DOMContentLoaded', function() {
+        const forms = document.querySelectorAll('form');
+        forms.forEach(form => {
+            form.addEventListener('submit', function() {
+                const submitButtons = this.querySelectorAll('button[type="submit"]');
+                submitButtons.forEach(btn => {
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 处理中...';
+                });
+            });
+        });
+    });
+</script>
+{% endblock %}

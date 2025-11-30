@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}管理员详情 - 班级操作系统{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">管理员详情</h1>
+    
+    <!-- 返回按钮 -->
+    <div class="mb-4">
+        <a href="{% url 'accounts:admin_list' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> 返回管理员列表
+        </a>
+    </div>
+    
+    <!-- 管理员信息卡片 -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2 class="h5 mb-0">基本信息</h2>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <!-- 左侧：账号状态 -->
+                <div class="col-md-3">
+                    <div class="text-center mb-4">
+                        <div class="card p-3 mb-3">
+                            <h4 class="text-{% if admin.is_active %}success{% else %}danger{% endif %}">
+                                <i class="fas fa-power-off"></i> {{ admin.is_active|yesno:'已启用,已禁用' }}
+                            </h4>
+                            <p class="text-muted small">账号状态</p>
+                        </div>
+                        
+                        <div class="card p-3">
+                            <h4 class="text-info">
+                                {% if admin.is_super_admin %}<i class="fas fa-crown"></i> 超级管理员{% else %}<i class="fas fa-user-shield"></i> 普通管理员{% endif %}
+                            </h4>
+                            <p class="text-muted small">管理员类型</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 右侧：详细信息 -->
+                <div class="col-md-9">
+                    <div class="row">
+                        <!-- 用户名 -->
+                        <div class="col-md-6 mb-3">
+                            <label class="font-weight-bold">用户名：</label>
+                            <span>{{ admin.username }}</span>
+                        </div>
+                        
+                        <!-- 姓名 -->
+                        <div class="col-md-6 mb-3">
+                            <label class="font-weight-bold">姓名：</label>
+                            <span>{{ admin.admin_info.name|default:'-' }}</span>
+                        </div>
+                        
+                        <!-- 手机号 -->
+                        <div class="col-md-6 mb-3">
+                            <label class="font-weight-bold">手机号：</label>
+                            <span>{{ admin.admin_info.phone|default:'-' }}</span>
+                        </div>
+                        
+                        <!-- 邮箱 -->
+                        <div class="col-md-6 mb-3">
+                            <label class="font-weight-bold">邮箱：</label>
+                            <span>{{ admin.email }}</span>
+                        </div>
+                        
+                        <!-- 创建时间 -->
+                        <div class="col-md-6 mb-3">
+                            <label class="font-weight-bold">创建时间：</label>
+                            <span>{{ admin.date_joined|date:'Y-m-d H:i:s' }}</span>
+                        </div>
+                        
+                        <!-- 最后登录时间 -->
+                        <div class="col-md-6 mb-3">
+                            <label class="font-weight-bold">最后登录：</label>
+                            <span>{{ admin.last_login|date:'Y-m-d H:i:s'|default:'从未登录' }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 操作按钮 -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2 class="h5 mb-0">操作</h2>
+        </div>
+        <div class="card-body">
+            <div class="btn-group" role="group">
+                <a href="{% url 'accounts:admin_edit' admin.id %}" class="btn btn-primary">
+                    <i class="fas fa-edit"></i> 编辑信息
+                </a>
+                {% if admin.role == 'admin' %}  <!-- 只为普通管理员显示禁用和删除按钮 -->
+                <a href="{% url 'accounts:admin_toggle' admin.id %}" class="btn btn-{% if admin.is_active %}danger{% else %}success{% endif %}" onclick="return confirm('确定要{% if admin.is_active %}禁用{% else %}启用{% endif %}该管理员账号吗？')">
+                    <i class="fas fa-power-off"></i> {% if admin.is_active %}禁用{% else %}启用{% endif %}账号
+                </a>
+                <a href="{% url 'accounts:admin_delete' admin.id %}" class="btn btn-danger" onclick="return confirm('确定要删除该管理员账号吗？此操作不可恢复！')">
+                    <i class="fas fa-trash"></i> 删除账号
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // 添加按钮点击效果
+    document.addEventListener('DOMContentLoaded', function() {
+        const buttons = document.querySelectorAll('.btn');
+        buttons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                if (this.hasAttribute('onclick') && !confirm(this.getAttribute('onclick').match(/confirm\('([^']*)'\)/)[1])) {
+                    e.preventDefault();
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

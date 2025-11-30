@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if form.instance.pk %}编辑订单{% else %}创建订单{% endif %} - 课程进度管理系统{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="mb-4">{% if form.instance.pk %}编辑订单{% else %}创建订单{% endif %}</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="post" class="needs-validation" novalidate id="orderForm">
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        {{ form.order_name.label_tag }}
+                        {{ form.order_name }}
+                        {% if form.order_name.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.order_name.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ form.teacher.label_tag }}
+                        {{ form.teacher }}
+                        {% if form.teacher.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.teacher.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            {{ form.student_count.label_tag }}
+                            {{ form.student_count }}
+                            {% if form.student_count.errors %}
+                                <div class="invalid-feedback">
+                                    {{ form.student_count.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group col-md-4">
+                            {{ form.service_type.label_tag }}
+                            {{ form.service_type }}
+                            {% if form.service_type.errors %}
+                                <div class="invalid-feedback">
+                                    {{ form.service_type.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group col-md-4">
+                            {{ form.status.label_tag }}
+                            {{ form.status }}
+                            {% if form.status.errors %}
+                                <div class="invalid-feedback">
+                                    {{ form.status.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            {{ form.unit_price.label_tag }}
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">¥</span>
+                                </div>
+                                {{ form.unit_price }}
+                            </div>
+                            {% if form.unit_price.errors %}
+                                <div class="invalid-feedback">
+                                    {{ form.unit_price.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group col-md-6">
+                            {{ form.total_hours.label_tag }}
+                            <div class="input-group">
+                                {{ form.total_hours }}
+                                <div class="input-group-append">
+                                    <span class="input-group-text">小时</span>
+                                </div>
+                            </div>
+                            {% if form.total_hours.errors %}
+                                <div class="invalid-feedback">
+                                    {{ form.total_hours.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ form.description.label_tag }}
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <div class="invalid-feedback">
+                                {{ form.description.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>订单总金额</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">¥</span>
+                            </div>
+                            <input type="text" class="form-control" id="totalAmount" value="0.00" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> 保存
+                        </button>
+                        <a href="{% url 'orders:admin_order_list' %}" class="btn btn-secondary ml-2">
+                            <i class="fas fa-times"></i> 取消
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">订单信息</h5>
+                <ul class="list-group list-group-flush">
+                    {% if form.instance.pk %}
+                        <li class="list-group-item">
+                            <strong>订单编号：</strong>
+                            {{ form.instance.order_number }}
+                        </li>
+                        <li class="list-group-item">
+                            <strong>创建时间：</strong>
+                            {{ form.instance.created_at|date:'Y-m-d H:i' }}
+                        </li>
+                        <li class="list-group-item">
+                            <strong>更新时间：</strong>
+                            {{ form.instance.updated_at|date:'Y-m-d H:i' }}
+                        </li>
+                    {% else %}
+                        <li class="list-group-item">
+                            <strong>订单编号：</strong>
+                            自动生成
+                        </li>
+                        <li class="list-group-item">
+                            <strong>创建时间：</strong>
+                            保存后生成
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- 引入Font Awesome图标库 -->
+
+<script>
+// 实时计算总金额
+function calculateTotalAmount() {
+    const unitPrice = parseFloat(document.getElementById('id_unit_price').value) || 0;
+    const totalHours = parseFloat(document.getElementById('id_total_hours').value) || 0;
+    const totalAmount = unitPrice * totalHours;
+    document.getElementById('totalAmount').value = totalAmount.toFixed(2);
+}
+
+// 初始计算
+calculateTotalAmount();
+
+// 绑定事件
+// 修复：移除重复的事件监听器绑定，直接使用jQuery方式
+$(document).ready(function() {
+    $('#id_unit_price, #id_total_hours').on('input', calculateTotalAmount);
+    
+    // 表单提交动画
+    $('#orderForm').submit(function() {
+        $(this).find('button[type="submit"]').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> 保存中...');
+    });
+});
+</script>
+{% endblock %}

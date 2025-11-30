@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+
+{% block title %}审批工资申请 - 课程进度管理系统{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="mb-4">审批工资申请</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <!-- 申请基本信息 -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <i class="fas fa-file-invoice-dollar"></i> 申请基本信息
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group row">
+                            <label class="col-sm-4 col-form-label">申请编号：</label>
+                            <div class="col-sm-8">
+                                <input type="text" readonly class="form-control-plaintext" value="{{ application.id }}">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-4 col-form-label">申请教师：</label>
+                            <div class="col-sm-8">
+                                <input type="text" readonly class="form-control-plaintext" value="{{ application.teacher.username }}">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-4 col-form-label">申请日期：</label>
+                            <div class="col-sm-8">
+                                <input type="text" readonly class="form-control-plaintext" value="{{ application.created_at|date:'Y-m-d H:i:s' }}">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-4 col-form-label">申请金额：</label>
+                            <div class="col-sm-8">
+                                <input type="text" readonly class="form-control-plaintext" value="¥{{ application.apply_amount }}">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group row">
+                            <label class="col-sm-4 col-form-label">申请状态：</label>
+                            <div class="col-sm-8">
+                                <input type="text" readonly class="form-control-plaintext"
+                                       value="{% if application.status == 'pending' %}待审核{% elif application.status == 'approved' %}已审批{% elif application.status == 'rejected' %}已拒绝{% elif application.status == 'withdrawn' %}已撤回{% endif %}"
+                                       style="{% if application.status == 'pending' %}color: orange;{% elif application.status == 'approved' %}color: green;{% elif application.status == 'rejected' %}color: red;{% elif application.status == 'withdrawn' %}color: gray;{% endif %}"
+                                       >
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 订单信息 -->
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <i class="fas fa-shopping-cart"></i> 订单信息
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group row">
+                            <label class="col-sm-4 col-form-label">订单编号：</label>
+                            <div class="col-sm-8">
+                                <input type="text" readonly class="form-control-plaintext" value="{{ application.order.order_number }}">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-4 col-form-label">订单名称：</label>
+                            <div class="col-sm-8">
+                                <input type="text" readonly class="form-control-plaintext" value="{{ application.order.name }}">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group row">
+                            <label class="col-sm-4 col-form-label">订单总金额：</label>
+                            <div class="col-sm-8">
+                                <input type="text" readonly class="form-control-plaintext" value="¥{{ application.order.total_amount }}">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-4 col-form-label">订单状态：</label>
+                            <div class="col-sm-8">
+                                <input type="text" readonly class="form-control-plaintext"
+                                       value="{% if application.order.status == 'active' %}进行中{% elif application.order.status == 'completed' %}已完成{% endif %}"
+                                       style="{% if application.order.status == 'active' %}color: blue;{% elif application.order.status == 'completed' %}color: green;{% endif %}"
+                                       >
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 备注信息 -->
+        {% if application.remarks %}
+        <div class="card mb-4">
+            <div class="card-header bg-secondary text-white">
+                <i class="fas fa-comment"></i> 备注信息
+            </div>
+            <div class="card-body">
+                <textarea readonly class="form-control" rows="3">{{ application.remarks }}</textarea>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- 审批操作 -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <i class="fas fa-tools"></i> 审批操作
+            </div>
+            <div class="card-body">
+                <p class="text-warning mb-4">
+                    <i class="fas fa-exclamation-triangle"></i> 请确认是否要通过该工资申请？
+                </p>
+                
+                {% if application.status == 'pending' %}
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="form-group mb-4">
+                            <label for="approval_note">审批备注（可选）：</label>
+                            <textarea class="form-control" id="approval_note" name="approval_note" rows="3" placeholder="请输入审批备注（可选）"></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-success btn-block mb-2">
+                            <i class="fas fa-check"></i> 确认通过
+                        </button>
+                        
+                        <a href="{% url 'orders:salary_application_detail' application.id %}" class="btn btn-secondary btn-block">
+                            <i class="fas fa-times"></i> 取消返回
+                        </a>
+                    </form>
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> 该申请当前状态为：
+                        <strong>{% if application.status == 'approved' %}已审批{% elif application.status == 'rejected' %}已拒绝{% elif application.status == 'withdrawn' %}已撤回{% endif %}</strong>
+                        ，无法进行审批操作。
+                    </div>
+                    
+                    <a href="{% url 'orders:salary_application_detail' application.id %}" class="btn btn-secondary btn-block">
+                        <i class="fas fa-arrow-left"></i> 返回详情
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

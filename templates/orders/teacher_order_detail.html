@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+
+{% block title %}订单详情 - 课程进度管理系统{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>订单详情</h1>
+            <div class="btn-group">
+                {% if order.status == 'completed' %}
+                    <a href="{% url 'orders:salary_application_create' %}?order_id={{ order.id }}" class="btn btn-warning">
+                        <i class="fas fa-file-invoice-dollar"></i> 申请工资
+                    </a>
+                {% endif %}
+                <a href="{% url 'orders:teacher_order_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-list"></i> 返回列表
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- 订单基本信息 -->
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                订单基本信息
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered">
+                    <tbody>
+                        <tr>
+                            <th>订单编号</th>
+                            <td>{{ order.order_number }}</td>
+                        </tr>
+                        <tr>
+                            <th>订单名称</th>
+                            <td>{{ order.name }}</td>
+                        </tr>
+                        <tr>
+                            <th>服务学生数</th>
+                            <td>{{ order.student_count }}人</td>
+                        </tr>
+                        <tr>
+                            <th>服务类型</th>
+                            <td>
+                                {% if order.service_type == 'one_to_one' %}一对一{% elif order.service_type == 'one_to_two' %}一对二{% else %}{{ order.service_type }}{% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>单价</th>
+                            <td>¥{{ order.unit_price }}</td>
+                        </tr>
+                        <tr>
+                            <th>总时长</th>
+                            <td>{{ order.total_hours }}小时</td>
+                        </tr>
+                        <tr>
+                            <th>总金额</th>
+                            <td>¥{{ order.total_amount }}</td>
+                        </tr>
+                        <tr>
+                            <th>订单状态</th>
+                            <td>
+                                {% if order.status == 'pending' %}<span class="badge bg-warning">待开课</span>{% elif order.status == 'ongoing' %}<span class="badge bg-info">进行中</span>{% elif order.status == 'completed' %}<span class="badge bg-success">已完成</span>{% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>订单描述</th>
+                            <td>{{ order.description|default:'无' }}</td>
+                        </tr>
+                        <tr>
+                            <th>创建时间</th>
+                            <td>{{ order.created_at|date:'Y-m-d H:i:s' }}</td>
+                        </tr>
+                        <tr>
+                            <th>更新时间</th>
+                            <td>{{ order.updated_at|date:'Y-m-d H:i:s' }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <!-- 订单状态切换 -->
+                {% if order.status != 'completed' %}
+                <div class="mt-4">
+                    <h5 class="text-primary">更新订单状态</h5>
+                    <form method="post" class="form-inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="update_status" value="1">
+                        <div class="form-group mr-2">
+                            <select name="new_status" class="form-control">
+                                {% if order.status == 'pending' %}
+                                    <option value="ongoing">进行中</option>
+                                {% elif order.status == 'ongoing' %}
+                                    <option value="completed">已完成</option>
+                                {% endif %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-sync"></i> 更新状态
+                        </button>
+                    </form>
+                    <small class="form-text text-muted mt-1">
+                        {% if order.status == 'pending' %}课程开始后，请更新为「进行中」状态{% endif %}
+                        {% if order.status == 'ongoing' %}课程结束后，请更新为「已完成」状态以申请工资{% endif %}
+                    </small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- 右侧信息 -->
+    <div class="col-md-4">
+        <!-- 工资申请状态 -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                工资申请状态
+            </div>
+            <div class="card-body">
+                {% if order.has_pending_application %}
+                    {% for application in order.salary_applications.all %}
+                        {% if application.status != 'withdrawn' and application.status != 'rejected' %}
+                            <table class="table table-sm">
+                                <tbody>
+                                    <tr>
+                                        <th>申请编号</th>
+                                        <td>{{ application.id }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>申请金额</th>
+                                    <td>¥{{ application.apply_amount }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>申请状态</th>
+                                        <td>
+                                            {% if application.status == 'pending' %}<span class="badge bg-warning">待审核</span>{% elif application.status == 'approved' %}<span class="badge bg-success">已通过</span>{% elif application.status == 'rejected' %}<span class="badge bg-danger">已拒绝</span>{% elif application.status == 'withdrawn' %}<span class="badge bg-secondary">已撤回</span>{% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>申请时间</th>
+                                        <td>{{ application.created_at|date:'Y-m-d H:i' }}</td>
+                                    </tr>
+                                    {% if application.approved_at %}
+                                        <tr>
+                                            <th>审核时间</th>
+                                            <td>{{ application.approved_at|date:'Y-m-d H:i' }}</td>
+                                        </tr>
+                                    {% endif %}
+                                    {% if application.rejection_reason %}
+                                        <tr>
+                                            <th>拒绝原因</th>
+                                            <td>{{ application.rejection_reason }}</td>
+                                        </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                            {% if application.proof_file %}
+                                <div class="mt-2">
+                                    <a href="{{ application.proof_file.url }}" class="btn btn-sm btn-info" target="_blank">
+                                        <i class="fas fa-file-download"></i> 查看证明材料
+                                    </a>
+                                </div>
+                            {% endif %}
+                            {% if application.status == 'pending' %}
+                                <div class="mt-2">
+                                    <form method="post" action="{% url 'orders:salary_application_withdraw' application.id %}" onsubmit="return confirm('确定要撤回该工资申请吗？')">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-danger">
+                                            <i class="fas fa-undo"></i> 撤回申请
+                                        </button>
+                                    </form>
+                                </div>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                {% else %}
+                    <p class="text-center text-muted">
+                        {% if order.status == 'completed' %}您尚未提交工资申请{% else %}订单尚未完成，无法提交工资申请{% endif %}
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- 温馨提示 -->
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                温馨提示
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <i class="fas fa-info-circle text-info"></i> 订单完成后，您可以提交工资申请
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-info-circle text-info"></i> 工资申请需要上传证明材料（图片或PDF，不超过3MB）
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-info-circle text-info"></i> 申请金额不能超过订单总金额
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-info-circle text-info"></i> 审核通过后，工资将按照您提供的银行账户进行结算
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- 引入Font Awesome图标库 -->
+{% endblock %}

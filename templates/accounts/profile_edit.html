@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+
+{% block title %}编辑个人资料 - 课程进度管理系统{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="text-center">编辑个人资料</h3>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row">
+                        {% if user.role == 'teacher' %}
+                            <!-- 教师信息编辑表单 -->
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="name" class="form-label">姓名</label>
+                                    {{ form.name }}
+                                    {% if form.name.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.name.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="mb-3">
+                                    <label for="education" class="form-label">学历</label>
+                                    {{ form.education }}
+                                    {% if form.education.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.education.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="mb-3">
+                                    <label for="major" class="form-label">专业</label>
+                                    {{ form.major }}
+                                    {% if form.major.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.major.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="teaching_scope" class="form-label">辅导范围</label>
+                                    {{ form.teaching_scope }}
+                                    {% if form.teaching_scope.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.teaching_scope.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="mb-3">
+                                    <label for="bank_account" class="form-label">银行账户</label>
+                                    {{ form.bank_account }}
+                                    {% if form.bank_account.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.bank_account.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">
+                                        账户信息将脱敏显示（只显示最后4位）
+                                    </small>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="phone" class="form-label">联系电话</label>
+                                    {{ form.phone }}
+                                    {% if form.phone.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.phone.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                            </div>
+                        {% else %}
+                            <!-- 管理员信息编辑表单 -->
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="name" class="form-label">姓名</label>
+                                    {{ form.name }}
+                                    {% if form.name.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.name.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="mb-3">
+                                    <label for="phone" class="form-label">联系电话</label>
+                                    {{ form.phone }}
+                                    {% if form.phone.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.phone.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">邮箱</label>
+                                    {{ form.email }}
+                                    {% if form.email.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.email.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">保存修改</button>
+                </form>
+            </div>
+        </div>
+        {% if user.role == 'teacher' %}
+            <div class="mt-3">
+                <div class="alert alert-info">
+                    <strong>信息审核状态：</strong>
+                    {% if user.teacher_info.is_approved %}
+                        <span class="text-success">已通过</span>
+                    {% else %}
+                        <span class="text-warning">待审核</span>
+                    {% endif %}
+                    <p class="mt-1 mb-0">
+                        注：修改个人信息后需要管理员审核，审核通过前以原信息为准。
+                    </p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // 为表单字段添加 form-control 类
+    document.addEventListener('DOMContentLoaded', function() {
+        const inputs = document.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+            if (!input.classList.contains('form-control')) {
+                input.classList.add('form-control');
+            }
+        });
+    });
+    
+    // 添加表单提交动画
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const button = this.querySelector('button[type="submit"]');
+        button.disabled = true;
+        button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 保存中...';
+    });
+</script>
+{% endblock %}
