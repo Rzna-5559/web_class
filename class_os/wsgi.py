@@ -10,13 +10,16 @@ https://docs.djangoproject.com/en/5.2/howto/deployment/wsgi/
 import os
 import sys
 
-# 添加项目路径
-sys.path.append('/home/rznar/web_class')
-sys.path.append('/home/rznar/web_class/class_os')
-
-# 激活虚拟环境
-activate_this = '/home/rznar/.virtualenvs/web_class/bin/activate_this.py'
-exec(open(activate_this).read(), {'__file__': activate_this})
+# 仅在PythonAnywhere环境中添加项目路径和激活虚拟环境
+if os.path.exists('/home/rznar'):
+    # PythonAnywhere环境
+    sys.path.append('/home/rznar/mysite')
+    sys.path.append('/home/rznar/mysite/class_os')
+    
+    # 激活虚拟环境
+    activate_this = '/home/rznar/.virtualenvs/mysite/bin/activate_this.py'
+    if os.path.exists(activate_this):
+        exec(open(activate_this).read(), {'__file__': activate_this})
 
 from django.core.wsgi import get_wsgi_application
 from django.conf import settings
